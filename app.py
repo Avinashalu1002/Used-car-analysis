@@ -2,16 +2,15 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Load model
+# ---------------- LOAD MODEL ----------------
 model = joblib.load("best_model.pkl")
 
-# Page config
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Car Price Predictor", layout="wide")
 
-# Title
 st.markdown("<h1 style='text-align: center;'>🚗 Car Price Prediction App</h1>", unsafe_allow_html=True)
 
-# Sidebar (Project Info)
+# ---------------- SIDEBAR ----------------
 st.sidebar.title("📊 Model Info")
 st.sidebar.write("**Algorithm:** XGBoost")
 st.sidebar.write("**R² Score:** 0.85")
@@ -25,28 +24,35 @@ st.sidebar.write("- Transmission")
 st.sidebar.write("- Car Age")
 st.sidebar.write("- KMS Driven")
 
-# Load dataset for dropdowns
+# ---------------- LOAD DATASET (ROBUST FIX) ----------------
 df = pd.read_csv("car_data.csv")
-df.columns = df.columns.str.strip()
 
-# Layout columns
+# Clean column names
+df.columns = df.columns.str.replace('"', '').str.strip()
+
+# If first column is useless index, drop it
+if df.columns[0] == '' or df.columns[0].lower() == 'unnamed: 0':
+    df = df.iloc[:, 1:]
+
+# ---------------- DROPDOWNS ----------------
 col1, col2 = st.columns(2)
 
 with col1:
-    brand = st.selectbox("Select Brand", sorted(df["Brand"].unique()))
-    city = st.selectbox("Select City", sorted(df["City"].unique()))
-    fuel = st.selectbox("Fuel Type", sorted(df["Fuel"].unique()))
+    brand = st.selectbox("Select Brand", sorted(df["Brand"].dropna().unique()))
+    city = st.selectbox("Select City", sorted(df["City"].dropna().unique()))
+    fuel = st.selectbox("Fuel Type", sorted(df["Fuel"].dropna().unique()))
 
 with col2:
-    transmission = st.selectbox("Transmission", sorted(df["Transmission"].unique()))
+    transmission = st.selectbox("Transmission", sorted(df["Transmission"].dropna().unique()))
     year = st.number_input("Year", 2000, 2025, 2018)
     kms = st.number_input("KMS Driven", 0, 200000, 30000)
 
-# Feature engineering
+# ---------------- FEATURE ENGINEERING ----------------
 car_age = 2025 - year
 
-# Predict button
+# ---------------- PREDICTION ----------------
 st.write("")
+
 if st.button("🔮 Predict Price", use_container_width=True):
 
     input_data = pd.DataFrame([{
@@ -68,7 +74,7 @@ if st.button("🔮 Predict Price", use_container_width=True):
     </div>
     """, unsafe_allow_html=True)
 
-# Footer
+# ---------------- FOOTER ----------------
 st.markdown("---")
 st.markdown(
     "<p style='text-align: center;'>Built with ❤️ using Streamlit | ML Model: XGBoost</p>",
