@@ -24,15 +24,24 @@ st.sidebar.write("- Transmission")
 st.sidebar.write("- Car Age")
 st.sidebar.write("- KMS Driven")
 
-# ---------------- LOAD DATASET (ROBUST FIX) ----------------
-df = pd.read_csv("car_data.csv")
+# ---------------- LOAD & FIX DATASET ----------------
+df = pd.read_csv("car_data.csv", header=0)
 
 # Clean column names
 df.columns = df.columns.str.replace('"', '').str.strip()
 
-# If first column is useless index, drop it
-if df.columns[0] == '' or df.columns[0].lower() == 'unnamed: 0':
-    df = df.iloc[:, 1:]
+# If dataset is broken into one column → fix it
+if len(df.columns) == 1:
+    df = df[df.columns[0]].str.split(",", expand=True)
+    df.columns = ["index","Brand","Car","Year","City","KMS","Fuel","Transmission","Price","Emi"]
+
+# Drop unwanted index column
+if "index" in df.columns:
+    df.drop("index", axis=1, inplace=True)
+
+# Convert numeric columns
+df["Year"] = pd.to_numeric(df["Year"], errors="coerce")
+df["KMS"] = pd.to_numeric(df["KMS"], errors="coerce")
 
 # ---------------- DROPDOWNS ----------------
 col1, col2 = st.columns(2)
