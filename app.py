@@ -5,7 +5,7 @@ import joblib
 from datetime import datetime
 
 # Load model
-model = joblib.load("xgb_model.pkl")
+model = joblib.load("xgbs_model.pkl")
 
 # Page config
 st.set_page_config(page_title="Car Price Predictor", layout="wide")
