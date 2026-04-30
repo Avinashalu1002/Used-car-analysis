@@ -26,7 +26,7 @@ st.sidebar.write("- Car Age")
 st.sidebar.write("- KMS Driven")
 
 # Load dataset for dropdowns
-df = pd.read_csv("carss.csv")
+df = pd.read_excel("carss.xls")
 
 # Layout columns
 col1, col2 = st.columns(2)
