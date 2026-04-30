@@ -14,7 +14,6 @@ st.markdown("<h1 style='text-align: center;'>🚗 Car Price Prediction App</h1>"
 st.sidebar.title("📊 Model Info")
 st.sidebar.write("**Algorithm:** XGBoost")
 st.sidebar.write("**R² Score:** 0.85")
-st.sidebar.write("**MAE:** ₹1,06,880")
 st.sidebar.write("---")
 st.sidebar.write("**Features Used:**")
 st.sidebar.write("- Brand")
@@ -86,6 +85,6 @@ if st.button("🔮 Predict Price", use_container_width=True):
 # ---------------- FOOTER ----------------
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center;'>Built with ❤️ using Streamlit | ML Model: XGBoost</p>",
+    "<p style='text-align: center;'>Provide the car specifications to predict its expected market price.</p>",
     unsafe_allow_html=True
 )
