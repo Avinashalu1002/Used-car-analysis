@@ -4,121 +4,85 @@ import numpy as np
 import joblib
 from datetime import datetime
 
-# ---------------- LOAD MODEL ----------------
-
+# Load model
 model = joblib.load("xgb_model.pkl")
 
-# ---------------- PAGE CONFIG ----------------
-
+# Page config
 st.set_page_config(page_title="Car Price Predictor", layout="wide")
-
 st.markdown("<h1 style='text-align: center;'>🚗 Car Price Prediction App</h1>", unsafe_allow_html=True)
 
-# ---------------- SIDEBAR ----------------
-
+# Sidebar
 st.sidebar.title("📊 Model Info")
-st.sidebar.write("**Algorithm:** XGBoost")
-st.sidebar.write("**Features Used:**")
-st.sidebar.write("- Brand")
-st.sidebar.write("- Model")
-st.sidebar.write("- City")
-st.sidebar.write("- Fuel")
-st.sidebar.write("- Transmission")
-st.sidebar.write("- Car Age")
-st.sidebar.write("- KMS Driven")
+st.sidebar.write("Algorithm: XGBoost")
+st.sidebar.write("Features: Brand, Model, City, Fuel, Transmission, Car Age, KMS")
 
-# ---------------- LOAD DATA ----------------
-
+# Load data
 df = pd.read_csv("car_data.csv")
 df.columns = df.columns.str.replace('"', '').str.strip()
 
-# Fix broken dataset (if needed)
-
+# Fix dataset if needed
 if len(df.columns) == 1:
-df = df[df.columns[0]].str.split(",", expand=True)
-df.columns = ["index","Brand","Car","Year","City","KMS","Fuel","Transmission","Price","Emi"]
+    df = df[df.columns[0]].str.split(",", expand=True)
+    df.columns = ["index","Brand","Car","Year","City","KMS","Fuel","Transmission","Price","Emi"]
 
-# Drop unnecessary columns
-
+# Drop unwanted columns
 if "index" in df.columns:
-df.drop("index", axis=1, inplace=True)
+    df.drop("index", axis=1, inplace=True)
+
 if "Emi" in df.columns:
-df.drop("Emi", axis=1, inplace=True)
+    df.drop("Emi", axis=1, inplace=True)
 
-# Convert numeric
-
+# Convert types
 df["Year"] = pd.to_numeric(df["Year"], errors="coerce")
 df["KMS"] = pd.to_numeric(df["KMS"], errors="coerce")
 
-# ---------------- FEATURE ENGINEERING ----------------
-
+# Feature engineering
 df["Model"] = df["Car"].apply(lambda x: x.split()[0])
 
-# ---------------- UI ----------------
-
+# UI layout
 col1, col2 = st.columns(2)
 
 with col1:
-brand = st.selectbox("Select Brand", sorted(df["Brand"].dropna().unique()))
-
-```
-filtered_models = df[df["Brand"] == brand]["Model"].dropna().unique()
-model_name = st.selectbox("Select Model", sorted(filtered_models))
-
-city = st.selectbox("Select City", sorted(df["City"].dropna().unique()))
-```
+    brand = st.selectbox("Select Brand", sorted(df["Brand"].dropna().unique()))
+    filtered_models = df[df["Brand"] == brand]["Model"].dropna().unique()
+    model_name = st.selectbox("Select Model", sorted(filtered_models))
+    city = st.selectbox("Select City", sorted(df["City"].dropna().unique()))
 
 with col2:
-fuel = st.selectbox("Fuel Type", sorted(df["Fuel"].dropna().unique()))
-transmission = st.selectbox("Transmission", sorted(df["Transmission"].dropna().unique()))
-year = st.number_input("Year", 2000, datetime.now().year, 2018)
-kms = st.number_input("KMS Driven", 0, 200000, 30000)
+    fuel = st.selectbox("Fuel Type", sorted(df["Fuel"].dropna().unique()))
+    transmission = st.selectbox("Transmission", sorted(df["Transmission"].dropna().unique()))
+    year = st.number_input("Year", 2000, datetime.now().year, 2018)
+    kms = st.number_input("KMS Driven", 0, 200000, 30000)
 
-# ---------------- CREATE FEATURES ----------------
-
+# Create feature
 car_age = datetime.now().year - year
 
-# ---------------- PREDICTION ----------------
+# Prediction
+if st.button("Predict Price"):
 
-st.write("")
+    input_data = pd.DataFrame([{
+        "Brand": brand,
+        "City": city,
+        "Fuel": fuel,
+        "Transmission": transmission,
+        "Model": model_name,
+        "KMS": kms,
+        "Car_Age": car_age
+    }])
 
-if st.button("🔮 Predict Price", use_container_width=True):
+    prediction = model.predict(input_data)[0]
+    prediction = np.expm1(prediction)
 
-```
-input_data = pd.DataFrame([{
-    "Brand": brand,
-    "City": city,
-    "Fuel": fuel,
-    "Transmission": transmission,
-    "Model": model_name,
-    "KMS": kms,
-    "Car_Age": car_age
-}])
+    st.markdown("---")
+    st.write("### Estimated Price")
+    st.success(f"₹ {int(prediction):,}")
 
-# 🔥 Correct prediction (log → real price)
-prediction = model.predict(input_data)[0]
-prediction = np.expm1(prediction)
+    low = int(prediction * 0.9)
+    high = int(prediction * 1.1)
+    st.write(f"Expected range: ₹ {low:,} - ₹ {high:,}")
 
-# Optional range
-low = int(prediction * 0.9)
-high = int(prediction * 1.1)
-
+# Footer
 st.markdown("---")
-st.markdown(f"""
-<div style='text-align: center; padding: 20px; border-radius: 10px; background-color: #f0f2f6;'>
-    <h2>💰 Estimated Price</h2>
-    <h1 style='color: green;'>₹ {int(prediction):,}</h1>
-    <p>Expected range: ₹ {low:,} - ₹ {high:,}</p>
-</div>
-""", unsafe_allow_html=True)
-```
-
-# ---------------- FOOTER ----------------
-
-st.markdown("---")
-st.markdown(
-"<p style='text-align: center;'>Provide the car specifications to predict its expected market price.</p>",
-unsafe_allow_html=True
-)
+st.write("Provide car details to predict price.")
 
 
