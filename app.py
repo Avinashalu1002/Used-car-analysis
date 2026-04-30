@@ -13,7 +13,7 @@ st.markdown("<h1 style='text-align: center;'>🚗 Car Price Prediction App</h1>"
 
 # ---------------- SIDEBAR ----------------
 st.sidebar.title("📊 Model Info")
-st.sidebar.write("**Algorithm:** Random Forest / XGBoost")
+st.sidebar.write("**Algorithm:** XGBoost")
 st.sidebar.write("**Features Used:**")
 st.sidebar.write("- Brand")
 st.sidebar.write("- Model")
